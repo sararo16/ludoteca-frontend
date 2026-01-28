@@ -1,0 +1,162 @@
+
+import { useState, useEffect } from 'react';
+
+import {
+Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField,
+MenuItem, FormControl, InputLabel, Select, FormHelperText
+} from '@mui/material';
+import {
+useGetClientsQuery,
+useGetGamesQuery,
+useCreatePrestamoMutation,
+useUpdatePrestamoMutation
+} from "../../redux/services/ludotecaApi";
+
+interface Props {
+open: boolean;
+onClose: () => void;
+prestamo?:any;
+}
+
+export const CreatePrestamo = ({ open, onClose,prestamo }: Props) => {
+const [clientId, setClientId] = useState("");
+const [gameId,setGameId] = useState("");
+const [startDate,setStartDate] = useState("");
+const [endDate,setEndDate] = useState("");
+const [errorMsg,setErrorMsg] = useState("");
+
+const {data:clients=[]} = useGetClientsQuery();
+const { data: games = [] } = useGetGamesQuery({ title: '', idCategory: '' });
+const [createPrestamo] = useCreatePrestamoMutation();
+const [updatePrestamo]=useUpdatePrestamoMutation();
+
+useEffect(() => {
+    if (prestamo){
+        setClientId(prestamo.client?._id || prestamo.client);
+        setGameId(prestamo.game?._id || prestamo.game);
+        setStartDate(prestamo.startDate?.split('T')[0]|| "");
+        setEndDate(prestamo.endDate?.split('T')[0]|| "");
+    }else{
+        setClientId('');
+        setGameId('');
+        setStartDate('');
+        setEndDate('');
+    }
+}, [prestamo,open]);
+
+const handleSave = async () => {
+
+    if (!clientId || !gameId || !startDate || !endDate) {
+setErrorMsg("Todos los campos son obligatorios");
+return;
+}
+const start=new Date(startDate);
+const end=new Date(endDate);
+if (end <=start ) {
+setErrorMsg("La fecha de fin debe ser posterior a la de inicio");
+return;
+}
+
+const diffTime = Math.abs(end.getTime() - start.getTime());
+const diffDays=Math.ceil(diffTime/(1000*60*60*24));
+
+if (diffDays > 14) {
+setErrorMsg("El préstamo no puede durar más de 14 días");
+return;
+}
+
+try {
+if (prestamo) {
+await updatePrestamo({
+_id: prestamo._id, 
+game: gameId,
+client: clientId,
+startDate,
+endDate
+}).unwrap();
+} else {
+await createPrestamo({
+game: gameId,
+client: clientId,
+startDate,
+endDate
+}).unwrap();
+}
+
+
+onClose();
+setClientId('');
+setGameId('');
+setStartDate('');
+setEndDate('');
+setErrorMsg('');
+} catch (error) {
+setErrorMsg("Error al guardar el préstamo");
+}
+};
+
+return (
+<Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+<DialogTitle>Nuevo Préstamo</DialogTitle>
+<DialogContent>
+<div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '10px' }}>
+
+<FormControl fullWidth>
+<InputLabel>Cliente</InputLabel>
+<Select
+value={clientId}
+label="Cliente"
+onChange={(e) => setClientId(e.target.value)}
+>
+{clients.map((client) => (
+<MenuItem key={client._id} value={client._id}>
+{client.name}
+</MenuItem>
+))}
+</Select>
+</FormControl>
+
+<FormControl fullWidth>
+<InputLabel>Juego</InputLabel>
+<Select
+value={gameId}
+label="Juego"
+onChange={(e) => setGameId(e.target.value)}
+>
+{games.map((game) => (
+<MenuItem key={game.id} value={game.id}>
+{game.title}
+</MenuItem>
+))}
+</Select>
+</FormControl>
+
+<TextField
+label="Fecha Inicio"
+type="date"
+InputLabelProps={{ shrink: true }}
+value={startDate}
+onChange={(e) => setStartDate(e.target.value)}
+fullWidth
+/>
+<TextField
+label="Fecha Fin"
+type="date"
+InputLabelProps={{ shrink: true }}
+value={endDate}
+onChange={(e) => setEndDate(e.target.value)}
+fullWidth
+/>
+
+{errorMsg && <FormHelperText error>{errorMsg}</FormHelperText>}
+</div>
+</DialogContent>
+<DialogActions>
+<Button onClick={onClose}>Cancelar</Button>
+<Button onClick={handleSave} variant="contained" color="primary">
+Guardar
+</Button>
+</DialogActions>
+</Dialog>
+);
+};
