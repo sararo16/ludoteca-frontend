@@ -13,21 +13,30 @@ useGetGamesQuery,
 useGetClientsQuery
 } from "../../redux/services/ludotecaApi";
 
+
 export const PrestamoList = () => {
+    //control del modal crear/Editar
 const [openModal, setOpenModal] = useState(false);
+    //prestamo seleccionado para editar, null si vamos a crear
 const [selectedPrestamo, setSelectedPrestamo] = useState<any | null>(null);
 
+    //filtros de busqueda
 const [filterGame, setFilterGame] = useState('');
 const [filterClient, setFilterClient] = useState('');
 const [filterDate, setFilterDate] = useState('');
+
+    //estado para paginacion
 const [page, setPage] = useState(0);
 const [pageSize, setPageSize] = useState(5);
 
+    //Listas auxiliares para los filtros (juegos y clientes)
 const { data: games = [] } = useGetGamesQuery({ title: '', idCategory: '' });
 const { data: clients = [] } = useGetClientsQuery();
 
+    //mutacion para borrar un prestamo
 const [deletePrestamo] = useDeletePrestamoMutation();
 
+    //consulta principal de prestamos con filtros y paginacion
 const { data: prestamoData, isLoading } = useGetPrestamoQuery({
 gameId: filterGame,
 clientId: filterClient,
@@ -38,41 +47,47 @@ pageSize: pageSize
 }
 });
 
+    //adaptacion para soportar backend con content o lista 
 const prestamoList = prestamoData?.content || prestamoData || [];
 const totalElements = prestamoData?.totalElements || 0;
 
-
+    //abre el modal en modo "crear"
 const handleCreate = () => {
 setSelectedPrestamo(null);
 setOpenModal(true);
 };
 
+    //abre el modal en modo editar con el item seleccionado
 const handleEdit = (item: any) => {
 setSelectedPrestamo(item);
 setOpenModal(true);
 };
-
+    //borra un prestamo con confirmacion del usuario
 const handleDelete = async (id: string) => {
 if (window.confirm("¿Seguro que quieres borrar este préstamo?")) {
 await deletePrestamo(id);
 }
 };
-
+    //utilidad para formatear fechas para mostrar
 const formatDate = (dateString: string) => {
 if (!dateString) return "";
 return new Date(dateString).toLocaleDateString();
 };
 
+//muestra spinner mientras se cargan los prestamos
 if (isLoading) return <CircularProgress />;
 
 return (
 <div style={{ padding: '20px' }}>
 <h1>Gestión de Préstamos</h1>
 
+    {/* Panel de filtros: Juego, Cliente y Fecha, con botón de limpiar */}
 <div style={{
 display: 'flex', gap: '10px', marginBottom: '20px',
 backgroundColor: '#f5f5f5', padding: '15px', borderRadius: '8px'
 }}>
+    
+        {/* Filtro por juego */}
 <TextField
 select
 label="Filtrar por Juego"
@@ -87,6 +102,8 @@ size="small"
 ))}
 </TextField>
 
+    
+        {/* Filtro por cliente */}
 <TextField
 select
 label="Filtrar por Cliente"
@@ -101,6 +118,8 @@ size="small"
 ))}
 </TextField>
 
+    
+        {/* Filtro por fecha (YYYY-MM-DD) */}
 <TextField
 type="date"
 label="Filtrar por Fecha"
@@ -110,6 +129,7 @@ onChange={(e) => setFilterDate(e.target.value)}
 size="small"
 />
 
+        {/* Botón para limpiar todos los filtros */}
 <Button variant="outlined" onClick={() => {
 setFilterGame('');
 setFilterClient('');
@@ -119,12 +139,14 @@ Limpiar
 </Button>
 </div>
 
+      {/* Botón para crear un nuevo préstamo */}
 <div style={{ marginBottom: '20px', textAlign: 'right' }}>
 <Button variant="contained" color="primary" onClick={handleCreate}>
 Nuevo Préstamo
 </Button>
 </div>
 
+      {/* Tabla de resultados */}
 <TableContainer component={Paper}>
 <Table>
 <TableHead>

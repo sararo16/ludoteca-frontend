@@ -13,14 +13,18 @@ import CardActionArea from "@mui/material/CardActionArea";
 import {red} from "@mui/material/colors";
 import type { Game } from "../../../types/Game";
 
+//prps que recibe el componente
 interface GameCardProps {
   game: Game;
 }
 
 export default function GameCard(props: GameCardProps) {
+  //desestructuramos los datos relevantes del juego
   const { title, age, category, author } = props.game;
   return (
+    //tarjeta principal 
     <Card sx={{ maxWidth: 265 }}>
+       {/* Cabecera de la tarjeta (título,categoría) */}
       <CardHeader
         sx={{
           ".MuiCardHeader-title": {
@@ -35,12 +39,18 @@ export default function GameCard(props: GameCardProps) {
         title={title}
         subheader={category?.name}
       />
+      
+      {/* Área interactiva  */}
       <CardActionArea>
+        
+        {/* Imagen del juego (sin src por ahora) */}
         <CardMedia
           component="img"
           height="140"
           alt="game image"
         />
+        
+        {/* Contenido inferior con lista de detalles */}
         <CardContent>
           <List dense={true}>
             <ListItem>

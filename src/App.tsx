@@ -8,6 +8,8 @@ import { Layout } from "./components/Layout";
 import { Provider } from "react-redux";
 import { LoaderProvider } from "./context/LoaderProvider";
 import { store } from "./redux/store";
+
+
 function App() {
   return (
     <LoaderProvider>

@@ -15,6 +15,7 @@ import Alert from "@mui/material/Alert";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { deleteMessage } from "../redux/features/messageSlice";
 
+//paginas para generar el menu
 const pages = [
   { name: "Catalogo", link: "games" },
   { name: "Categorías", link: "categories" },
@@ -26,19 +27,18 @@ const pages = [
 ];
 
 export const Layout = () => {
-  
+    //hook de redux dispara acciones
 const dispatch = useAppDispatch();
   const { text, type } = useAppSelector((state) => state.messageReducer);
 
+  //efecto que borra el mensaje a los 3s
   useEffect(() => {
     setTimeout(() => {
       dispatch(deleteMessage());
     }, 3000);
   }, [text, type]);
 
-      {text && (
-        <Alert severity={type === "error" ? "error" : "success"}>{text}</Alert>
-      )}
+      
   const navigate = useNavigate();
 
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(
@@ -152,6 +152,9 @@ const dispatch = useAppDispatch();
           </Toolbar>
         </Container>
       </AppBar>
+          {text && (
+        <Alert severity={type === "error" ? "error" : "success"}>{text}</Alert>
+      )}
       <Outlet />
     </>
   );

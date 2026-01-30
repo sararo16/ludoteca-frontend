@@ -19,21 +19,25 @@ prestamo?:any;
 }
 
 export const CreatePrestamo = ({ open, onClose,prestamo }: Props) => {
+//estado local del formulario
 const [clientId, setClientId] = useState("");
 const [gameId,setGameId] = useState("");
 const [startDate,setStartDate] = useState("");
 const [endDate,setEndDate] = useState("");
 const [errorMsg,setErrorMsg] = useState("");
 
+//queries: clientes y juegos
 const {data:clients=[]} = useGetClientsQuery();
 const { data: games = [] } = useGetGamesQuery({ title: '', idCategory: '' });
+//mutations:crear y actualizar prestamo
 const [createPrestamo] = useCreatePrestamoMutation();
 const [updatePrestamo]=useUpdatePrestamoMutation();
 
+//cargar datos cuando abrimos modal en modo edicion, o limpiarlos en modo crear
 useEffect(() => {
     if (prestamo){
         setClientId(prestamo.client?._id || prestamo.client);
-        setGameId(prestamo.game?._id || prestamo.game);
+        setGameId(prestamo.game?._id || prestamo.game?._id||prestamo.game);
         setStartDate(prestamo.startDate?.split('T')[0]|| "");
         setEndDate(prestamo.endDate?.split('T')[0]|| "");
     }else{
@@ -42,21 +46,23 @@ useEffect(() => {
         setStartDate('');
         setEndDate('');
     }
+    setErrorMsg('');
 }, [prestamo,open]);
 
 const handleSave = async () => {
-
+    //validacion basica
     if (!clientId || !gameId || !startDate || !endDate) {
 setErrorMsg("Todos los campos son obligatorios");
 return;
 }
+
 const start=new Date(startDate);
 const end=new Date(endDate);
 if (end <=start ) {
 setErrorMsg("La fecha de fin debe ser posterior a la de inicio");
 return;
 }
-
+    //calcular dias de prestamo
 const diffTime = Math.abs(end.getTime() - start.getTime());
 const diffDays=Math.ceil(diffTime/(1000*60*60*24));
 
@@ -66,34 +72,36 @@ return;
 }
 
 try {
-if (prestamo) {
-await updatePrestamo({
-_id: prestamo._id, 
-game: gameId,
-client: clientId,
-startDate,
-endDate
-}).unwrap();
-} else {
-await createPrestamo({
-game: gameId,
-client: clientId,
-startDate,
-endDate
-}).unwrap();
-}
+    if (prestamo) {
+        //actualizamos si existe el prestamo
+    await updatePrestamo({
+    _id: prestamo._id, 
+    game: gameId,
+    client: clientId,
+    startDate,
+    endDate
+    }).unwrap();
+    } else {
+        //crear si no existe
+    await createPrestamo({
+    game: gameId,
+    client: clientId,
+    startDate,
+    endDate
+    }).unwrap();
+    }
 
-
-onClose();
-setClientId('');
-setGameId('');
-setStartDate('');
-setEndDate('');
-setErrorMsg('');
-} catch (error) {
-setErrorMsg("Error al guardar el préstamo");
-}
-};
+    //cerrar y limpiar
+    onClose();
+    setClientId('');
+    setGameId('');
+    setStartDate('');
+    setEndDate('');
+    setErrorMsg('');
+    } catch (error) {
+    setErrorMsg("Error al guardar el préstamo");
+    }
+    };
 
 return (
 <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -101,6 +109,7 @@ return (
 <DialogContent>
 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '10px' }}>
 
+{/* Cliente */}
 <FormControl fullWidth>
 <InputLabel>Cliente</InputLabel>
 <Select
@@ -116,6 +125,7 @@ onChange={(e) => setClientId(e.target.value)}
 </Select>
 </FormControl>
 
+  {/* Juego */}
 <FormControl fullWidth>
 <InputLabel>Juego</InputLabel>
 <Select
@@ -131,6 +141,7 @@ onChange={(e) => setGameId(e.target.value)}
 </Select>
 </FormControl>
 
+ {/* Fechas */}
 <TextField
 label="Fecha Inicio"
 type="date"
@@ -148,6 +159,7 @@ onChange={(e) => setEndDate(e.target.value)}
 fullWidth
 />
 
+{/* Errores */}
 {errorMsg && <FormHelperText error>{errorMsg}</FormHelperText>}
 </div>
 </DialogContent>

@@ -25,94 +25,92 @@ import { setMessage } from "../../redux/features/messageSlice";
 import type { BackError } from "../../types/appTypes";
 import { LoaderContext } from "../../context/LoaderProvider";
 
+
+//Página de Categorías: listar, crear/editar (modal) y eliminar 
 export const Category = () => {
- 
-  const [openCreate, setOpenCreate] = useState(false);
+  const [openCreate, setOpenCreate] = useState(false); //control modal de crear/editar
+  
+  //si no es null, modo edicion
   const [categoryToUpdate, setCategoryToUpdate] =
     useState<CategoryModel | null>(null);
 
+  //redux dispach para mensajes
   const dispatch = useAppDispatch();
-  const { data, error, isLoading } = useGetCategoriesQuery(null);
 
+  //listamos las categorias sin paginacion
+  const { data, isLoading } = useGetCategoriesQuery(null);
+
+  //eliminar categoria
   const [
     deleteCategoryApi,
-    { isLoading: isLoadingDelete, error: errorDelete },
+    { isLoading: isLoadingDelete },
   ] = useDeleteCategoryMutation();
   const [createCategoryApi, { isLoading: isLoadingCreate }] =
     useCreateCategoryMutation();
 
+  //crear y actualizar
   const [updateCategoryApi, { isLoading: isLoadingUpdate }] =
     useUpdateCategoryMutation();
    
     const loader = useContext(LoaderContext);
 
+  //operacion en curso--> mostrar/ocultar loader global
  useEffect(() => {
     loader.showLoading(
       isLoadingCreate || isLoading || isLoadingDelete || isLoadingUpdate
     );
   }, [isLoadingCreate, isLoading, isLoadingDelete, isLoadingUpdate]);
 
-   
-const createCategory = (category:string) => {
-setOpenCreate(false);
+  //crear o actualizar una categoria a partir de su nombre
+const createCategory = async (categoryName:string) => {
+  setOpenCreate(false);
+    //actualizar si hay categoria seleccionada
+    try{
     if (categoryToUpdate) {
-      updateCategoryApi({ id: categoryToUpdate.id, name: category })
-        .then(() => {
+     await updateCategoryApi({ id: categoryToUpdate.id, name: categoryName })
+        .unwrap();
           dispatch(
             setMessage({
               text: "Categoría actualizada correctamente",
               type: "ok",
             })
           );
-          setCategoryToUpdate(null);
-        })
-        .catch((err) => console.log(err));
     } else {
-      createCategoryApi({ name: category })
-        .then(() => {
-          setCategoryToUpdate(null);
-        })
-        .catch((err) => console.log(err));
+      await createCategoryApi({ name: categoryName }).unwrap();
+        dispatch (setMessage({ text: "Categoría creada correctamente", type: "ok" }));
+      } 
+      setCategoryToUpdate(null);
+    }
+    catch (e) {
+      const msg =
+        (e as BackError)?.msg ?? "No se pudo guardar la categoría. Inténtalo de nuevo.";
+      dispatch(setMessage({ text: msg, type: "error" }));
     }
   };
 
+
+  //Cierra el modal y limpia el estado de edicion
   const handleCloseCreate = () => {
     setOpenCreate(false);
     setCategoryToUpdate(null);
 
   };
+  //controla el id a eliminar 
 const [idToDelete, setIdToDelete] = useState("");
- const deleteCategory = () => {
-    deleteCategoryApi(idToDelete)
-      .then(() => {
-        dispatch(
-          setMessage({
-            text: "Categoría borrada correctamente",
-            type: "ok",
-          })
-        );
-        setIdToDelete("");
-      })
-      .catch((err) => console.log(err));
-  };
-useEffect(() => {
-    if (errorDelete) {
-      if ("status" in errorDelete) {
-        dispatch(
-          setMessage({
-            text: (errorDelete?.data as BackError).msg,
-            type: "error",
-          })
-        );
-      }
-    }
-  }, [errorDelete, dispatch]);
 
-  useEffect(() => {
-    if (error) {
-      dispatch(setMessage({ text: "Se ha producido un error", type: "error" }));
+const deleteCategory = async () => {
+    try {
+      await deleteCategoryApi(idToDelete).unwrap();
+      dispatch(setMessage({ text: "Categoría borrada correctamente", type: "ok" }));
+      setIdToDelete("");
+    } catch (e) {
+      const msg =
+        (e as BackError)?.msg ?? "No se pudo borrar la categoría. Inténtalo de nuevo.";
+      dispatch(setMessage({ text: msg, type: "error" }));
     }
-  }, [error]);
+  };
+
+
 
   return (
     <div className="container">
@@ -133,25 +131,29 @@ useEffect(() => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {data && data.map((category: CategoryModel) => (
+            
+            {/* Si data existe, pintamos las filas */}
+            {data && data.map((category: CategoryModel,index:number) => (
               <TableRow
                 key={category.id}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  {category.id}
+                  {index+1}
                 </TableCell>
                 <TableCell component="th" scope="row">
                   {category.name}
                 </TableCell>
                 <TableCell>
                   <div className={styles.tableActions}>
+                     {/* Editar ,abre modal y carga la categoría */}
                     <IconButton aria-label="update" color="primary" onClick ={() => {
                         setCategoryToUpdate(category);
                         setOpenCreate(true);
                       }}>
                       <EditIcon />
                     </IconButton>
+                    {/* Eliminar: abre confirm dialog  */}
                     <IconButton aria-label="delete" color="error" onClick={() => {
                           setIdToDelete(category.id);
                         }}>
@@ -164,24 +166,31 @@ useEffect(() => {
           </TableBody>
         </Table>
       </TableContainer>
+      
+      {/* Botón para crear nueva categoría */}
             <div className="newButton">
         <Button variant="contained" onClick={() => setOpenCreate(true)}>
           Nueva categoría
         </Button>
       </div>
+      
+      {/* Modal crear/editar categoría */}
       {openCreate && (
         <CreateCategory
           create={createCategory}
-          category={categoryToUpdate}
-          closeModal={handleCloseCreate}
+          category={categoryToUpdate} //si existe --> edicion
+          closeModal={handleCloseCreate} //cierra y limpia
         />
       )}
+
+        {/* ConfirmDialog para eliminar*/}
             {!!idToDelete && (
         <ConfirmDialog
-          title="Eliminar categoría"
-          text="Atención si borra la categoría se perderán sus datos. ¿Desea eliminar la categoría?"
-          confirm={deleteCategory}
-          closeModal={() => setIdToDelete('')}
+        open={!!idToDelete} 
+        onClose={() => setIdToDelete('')} 
+        onConfirm={deleteCategory} 
+        title="Eliminar categoría"
+        content="Atención si borra la categoría se perderán sus datos. ¿Desea eliminar la categoría?"
         />
       )}
 

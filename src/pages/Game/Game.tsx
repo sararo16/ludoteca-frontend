@@ -19,51 +19,66 @@ import type { Game as GameModel } from "../../types/Game";
 import type { Category } from "../../types/Category";
 
 export const Game = () => {
+  //control del modal de crear/Editar
   const [openCreate, setOpenCreate] = useState(false);
+  //Filtros del listadp titulo y categoria
   const [filterTitle, setFilterTitle] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
+  
+  //si no es null, estamos en modo edicion
   const [gameToUpdate, setGameToUpdate] = useState<GameModel | null>(null);
+  
+  //loader global y dispatcher de mensajes
   const loader = useContext(LoaderContext);
   const dispatch = useAppDispatch();
 
+  //query de juegos con filtros, is fetching-->esta recargando por cambios de filtros
   const { data, error, isLoading, isFetching } = useGetGamesQuery({
     title: filterTitle,
     idCategory: filterCategory,
   });
 
+  //mutacion para actualizar juegos 
   const [updateGameApi, { isLoading: isLoadingUpdate, error: errorUpdate }] =
     useUpdateGameMutation();
 
+  //query de categorias para el select de filtro 
   const { data: categories } = useGetCategoriesQuery(null);
 
+  //mutacion para crear juegos 
   const [createGameApi, { isLoading: isLoadingCreate, error: errorCreate }] =
     useCreateGameMutation();
 
+  //enciende el loader si cualquiera de las operaciones esta cargando
   useEffect(() => {
     loader.showLoading(
       isLoadingCreate || isLoadingUpdate || isLoading || isFetching
     );
   }, [isLoadingCreate, isLoadingUpdate, isLoading, isFetching]);
 
+  //si falla crear o actualizar, lanza mensaje de error
   useEffect(() => {
     if (errorCreate || errorUpdate) {
-      setMessage({
+      dispatch(setMessage({
         text: "Se ha producido un error al realizar la operación",
         type: "error",
-      });
+      }));
     }
-  }, [errorUpdate, errorCreate]);
+  }, [errorUpdate, errorCreate,dispatch]);
 
+  //si falla el listado se renderiza un mensaje de error simple
   if (error) return <p>Error cargando!!!</p>;
 
-  const createGame = (game: GameModel) => {
+  //crear o actualizar juego 
+  const createGame = async (game: GameModel) => {
     setOpenCreate(false);
+    try{
     if (gameToUpdate) {
-      updateGameApi({
+      //actualizar- manda el juego con el id que se esta editando
+      await updateGameApi({
         ...game,
         id: gameToUpdate.id,
-      })
-        .then(() => {
+      }).unwrap();
           dispatch(
             setMessage({
               text: "Juego actualizado correctamente",
@@ -71,11 +86,9 @@ export const Game = () => {
             })
           );
           setGameToUpdate(null);
-        })
-        .catch((err) => console.log(err));
-    } else {
-      createGameApi(game)
-        .then(() => {
+        }else{
+        //crear
+        await createGameApi(game).unwrap();
           dispatch(
             setMessage({
               text: "Juego creado correctamente",
@@ -83,14 +96,20 @@ export const Game = () => {
             })
           );
           setGameToUpdate(null);
-        })
-        .catch((err) => console.log(err));
-    }
-  };
+          }
+        }
+          catch (e: any) {
+      const msg = e?.data?.msg ?? "No se pudo guardar el juego. Inténtalo de nuevo.";
+    dispatch(setMessage({ text: msg, type: "error" }));
+  }
+};
+
 
   return (
     <div className="container">
       <h1>Catálogo de juegos</h1>
+
+    {/* Barra de filtros (por título y por categoría) */}   
       <div className={styles.filter}>
         <FormControl variant="standard" sx={{ m: 1, minWidth: 220 }}>
           <TextField
@@ -135,25 +154,41 @@ export const Game = () => {
           Limpiar
         </Button>
       </div>
+
+      {/* Grid de tarjetas de juegos; 
+      cada card abre el modal en modo edición */}
       <div className={styles.cards}>
-        {data?.map((card) => (
-          <div
-            key={card.id}
-            className={styles.card}
-            onClick={() => {
-              setGameToUpdate(card);
-              setOpenCreate(true);
-            }}
-          >
-            <GameCard game={card} />
-          </div>
-        ))}
-      </div>
+
+     {/* Mensaje si no hay juegos según los filtros */}
+      {data && data.length === 0 && (
+        <p style={{ padding: 16, color: "#666" }}>
+          No hay juegos que coincidan con los filtros.
+        </p>
+      )}
+
+    {/* Renderizado de las tarjetas de juegos */}
+    {data?.map((card) => (
+      <div
+      key={card.id}
+      className={styles.card}
+      onClick={() => {
+        setGameToUpdate(card);
+        setOpenCreate(true);
+      }}
+      >
+      <GameCard game={card} />
+    </div>
+      ))}
+
+</div>
+      {/* Botón para crear un nuevo juego */}
       <div className="newButton">
         <Button variant="contained" onClick={() => setOpenCreate(true)}>
           Nuevo juego
         </Button>
       </div>
+      
+      {/* Modal para crear/editar  juego */}
       {openCreate && (
         <CreateGame
           create={createGame}

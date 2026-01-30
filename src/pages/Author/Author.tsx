@@ -27,16 +27,21 @@ import {
 } from "../../redux/services/ludotecaApi";
 import { LoaderContext } from "../../context/LoaderProvider";
 
+
 export const Author = () => {
+  //paginacion
   const [pageNumber, setPageNumber] = useState(0);
   const [pageSize, setPageSize] = useState(5);
   const [total, setTotal] = useState(0);
   const [authors, setAuthors] = useState<AuthorModel[]>([]);
-  const [openCreate, setOpenCreate] = useState(false);
-  const [idToDelete, setIdToDelete] = useState("");
+  
+  const [openCreate, setOpenCreate] = useState(false);  //creacion edicion
+
+  const [idToDelete, setIdToDelete] = useState("");  //si tiene valor eliminar
+
   const [authorToUpdate, setAuthorToUpdate] = useState<AuthorModel | null>(
     null
-  );
+  ); //si tiene autor ,modo edicion
 
   const dispatch = useAppDispatch();
   const loader = useContext(LoaderContext);
@@ -48,6 +53,7 @@ export const Author = () => {
     setPageNumber(newPage);
   };
 
+  //handlers de paginacion
   const handleChangeRowsPerPage = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -55,26 +61,31 @@ export const Author = () => {
     setPageSize(parseInt(event.target.value, 10));
   };
 
+  //consulta principal, obtener listado paginado autores
   const { data, error, isLoading } = useGetAuthorsQuery({
     pageNumber,
     pageSize,
   });
 
+  //mutacion eliminar autor
   const [deleteAuthorApi, { isLoading: isLoadingDelete, error: errorDelete }] =
     useDeleteAuthorMutation();
 
+  //mutacion crear autor
   const [createAuthorApi, { isLoading: isLoadingCreate }] =
     useCreateAuthorMutation();
-
+  //mutacion actualizar autor
   const [updateAuthorApi, { isLoading: isLoadingUpdate }] =
     useUpdateAuthorMutation();
 
+  //loader global , estados de carga
   useEffect(() => {
     loader.showLoading(
       isLoadingCreate || isLoading || isLoadingDelete || isLoadingUpdate
     );
   }, [isLoadingCreate, isLoading, isLoadingDelete, isLoadingUpdate]);
 
+  //set tabla y total cuando llega data
   useEffect(() => {
     if (data) {
       setAuthors(data.content);
@@ -82,9 +93,9 @@ export const Author = () => {
     }
   }, [data]);
 
+  //error en delete, saca mensaje
   useEffect(() => {
-    if (errorDelete) {
-      if ("status" in errorDelete) {
+    if (errorDelete && "status" in errorDelete) {
         dispatch(
           setMessage({
             text: (errorDelete?.data as BackError).msg,
@@ -92,50 +103,60 @@ export const Author = () => {
           })
         );
       }
-    }
   }, [errorDelete, dispatch]);
 
+  //error en listado
   useEffect(() => {
     if (error) {
       dispatch(setMessage({ text: "Se ha producido un error", type: "error" }));
     }
-  }, [error]);
+  }, [error,dispatch]);
 
-  const createAuthor = (author: AuthorModel) => {
-    setOpenCreate(false);
-    if (author.id) {
-      updateAuthorApi(author)
-        .then(() => {
-          dispatch(
-            setMessage({
-              text: "Autor actualizado correctamente",
-              type: "ok",
-            })
-          );
-          setAuthorToUpdate(null);
-        })
-        .catch((err) => console.log(err));
-    } else {
-      createAuthorApi(author)
-        .then(() => {
-          dispatch(
-            setMessage({ text: "Autor creado correctamente", type: "ok" })
-          );
-          setAuthorToUpdate(null);
-        })
-        .catch((err) => console.log(err));
+  //crear / editar autores
+  const createAuthor = async (author: AuthorModel) => {
+    setOpenCreate(false); //cierra el modal
+    
+    try{
+      //si hay id actualiza
+      if (author.id) {
+        await updateAuthorApi(author).unwrap();
+        dispatch(
+          setMessage({ text: "Autor actualizado correctamente", type: "ok" })
+        );
+        //si no crea
+      } else {
+        await createAuthorApi(author).unwrap();
+        dispatch(
+          setMessage({ text: "Autor creado correctamente", type: "ok" })
+        );
+      }
+      setAuthorToUpdate(null); //se resetea
+
+    } catch (e) {
+      const msg =
+        (e as BackError)?.msg ?? "No se pudo guardar el autor. Inténtalo de nuevo.";
+      dispatch(setMessage({ text: msg, type: "error" }));
     }
   };
 
-  const deleteAuthor = () => {
-    deleteAuthorApi(idToDelete)
-      .then(() => {
-        setIdToDelete("");
-      })
-      .catch((err) => console.log(err));
+  //eliminar autor
+  const deleteAuthor = async () => {
+    try {
+      await deleteAuthorApi(idToDelete).unwrap();
+      dispatch(
+        setMessage({ text: "Autor eliminado correctamente", type: "ok" })
+      );
+      setIdToDelete("");
+    } catch (e) {
+      const msg =
+        (e as BackError)?.msg ?? "No se pudo eliminar el autor. Inténtalo de nuevo.";
+      dispatch(setMessage({ text: msg, type: "error" }));
+    }
   };
 
+
   return (
+    //tabla
     <div className="container">
       <h1>Listado de Autores</h1>
       <TableContainer component={Paper}>
@@ -216,6 +237,8 @@ export const Author = () => {
           Nuevo autor
         </Button>
       </div>
+
+      {/* Modal crear/editar */}
       {openCreate && (
         <CreateAuthor
           create={createAuthor}
@@ -226,12 +249,14 @@ export const Author = () => {
           }}
         />
       )}
+       {/*Diálogo confirmación */}
       {!!idToDelete && (
         <ConfirmDialog
+          open={!!idToDelete}
+          onClose={()=>setIdToDelete("")}
+          onConfirm={deleteAuthor}
           title="Eliminar Autor"
-          text="Atención si borra el autor se perderán sus datos. ¿Desea eliminar el autor?"
-          confirm={deleteAuthor}
-          closeModal={() => setIdToDelete("")}
+          content="Atención si borra el autor se perderán sus datos. ¿Desea eliminar el autor?"
         />
       )}
     </div>
