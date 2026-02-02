@@ -9,7 +9,7 @@ export const ludotecaAPI = createApi({
   reducerPath: "ludotecaApi",
   baseQuery: fetchBaseQuery({
     //url base del back
-    baseUrl: "http://localhost:8080",
+    baseUrl: "http://localhost:8080/",
   }),
 
   //tipos de tags que vamos a usar para cachear e invalidar
@@ -21,15 +21,15 @@ export const ludotecaAPI = createApi({
     //CATEGORY
     //obtiene todas las categorias
     getCategories: builder.query<Category[], null>({
-      query: () => "category",
+      query: () => ({ url: "category", method: "GET" }),
       providesTags: ["Category"], //permite refercar cache al modificar
     }),
 
     //crear categoria
-    createCategory: builder.mutation({
+    createCategory: builder.mutation<void, { name: string }>({
       query: (payload) => ({
-        url: "/category",
-        method: "PUT",
+        url: "category",
+        method: "POST",
         body: payload,
         headers: {
           "Content-type": "application/json; charset=UTF-8",
@@ -40,7 +40,7 @@ export const ludotecaAPI = createApi({
     //eliminar categoria
     deleteCategory: builder.mutation({
       query: (id: string) => ({
-        url: `/category/${id}`,
+        url: `category/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Category"],

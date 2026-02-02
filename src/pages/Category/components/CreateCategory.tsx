@@ -67,8 +67,10 @@ export default function CreateCategory(props: Props) {
         <DialogActions>
           <Button onClick={props.closeModal}>Cancelar</Button>
           {/*Si name esta vacio se deshabilita*/ }
-          <Button onClick={() => props.create(name)} disabled={!name}>
-            {props.category ? "Actualizar" : "Crear"}
+        
+          <Button type="submit" disabled={!name.trim()}>
+          {props.category ? "Actualizar" : "Crear"}
+
           </Button>
         </DialogActions>
         </form>
