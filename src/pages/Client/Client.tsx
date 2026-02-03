@@ -1,3 +1,4 @@
+//este archivo contiene la gestion de clientes: listado, edicion, eliminacion y creacion
 import  {useState } from "react";
 import {Button,Table,TableBody,TableCell,TableContainer,TableHead,TableRow,Paper,IconButton} from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";

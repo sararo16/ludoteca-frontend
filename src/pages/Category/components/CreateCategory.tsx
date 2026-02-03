@@ -1,3 +1,5 @@
+
+//este archivo contiene el formylario modal para crear y editar una categoria
 import { useState,useEffect } from "react";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -7,6 +9,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import type { Category } from "../../../types/Category";
 
+//definicion de las props que recibe el componente
 interface Props {
   category: Category | null; //si viene --> edicion, si es null--> creacion
   closeModal: () => void;
@@ -26,6 +29,7 @@ export default function CreateCategory(props: Props) {
   const nameError = !name.trim() ? "El nombre es obligatorio" : "";
   const isInvalid = Boolean(nameError);
 
+  //evita que el formulario recargue la pagina
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isInvalid) return;

@@ -1,3 +1,6 @@
+
+//este archivo implementa toda la gestion de autores.
+
 import { useEffect, useState, useContext } from "react";
 import Button from "@mui/material/Button";
 import TableHead from "@mui/material/TableHead";
@@ -41,11 +44,12 @@ export const Author = () => {
 
   const [authorToUpdate, setAuthorToUpdate] = useState<AuthorModel | null>(
     null
-  ); //si tiene autor ,modo edicion
+  ); //si tiene autor ,modo edicion, si es null -->crear
 
-  const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch(); 
   const loader = useContext(LoaderContext);
 
+  //cambiar de pagina
   const handleChangePage = (
     _event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number
@@ -53,7 +57,7 @@ export const Author = () => {
     setPageNumber(newPage);
   };
 
-  //handlers de paginacion
+  //cambiar tamaño pagina
   const handleChangeRowsPerPage = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {

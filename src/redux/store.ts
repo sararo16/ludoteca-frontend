@@ -1,3 +1,5 @@
+
+//Este archivo configura el store global de Redux de la aplicacion
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { ludotecaAPI } from "./services/ludotecaApi";

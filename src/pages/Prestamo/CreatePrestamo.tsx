@@ -1,6 +1,6 @@
 
+//Este archivo contiene el componente para crear o editar un préstamo de juego
 import { useState, useEffect } from 'react';
-
 import {
 Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField,
 MenuItem, FormControl, InputLabel, Select, FormHelperText
@@ -12,6 +12,7 @@ useCreatePrestamoMutation,
 useUpdatePrestamoMutation
 } from "../../redux/services/ludotecaApi";
 
+//Definicion de las props del componente
 interface Props {
 open: boolean;
 onClose: () => void;

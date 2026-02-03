@@ -1,3 +1,4 @@
+//este archivo es el punto de union de toda la app
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Game } from "./pages/Game/Game";
 import { Author } from "./pages/Author/Author";

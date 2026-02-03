@@ -1,3 +1,4 @@
+//Este archivo es un dialogo/modal para crear o editar un juego
 import { type ChangeEvent, useContext, useEffect, useState } from "react";
 import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";

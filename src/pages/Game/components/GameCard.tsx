@@ -1,3 +1,5 @@
+//este archivo recibe un objeton y muestra sus datos en una tarjeta visual
+
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
@@ -13,7 +15,7 @@ import CardActionArea from "@mui/material/CardActionArea";
 import {red} from "@mui/material/colors";
 import type { Game } from "../../../types/Game";
 
-//prps que recibe el componente
+//pops que recibe el componente
 interface GameCardProps {
   game: Game;
 }

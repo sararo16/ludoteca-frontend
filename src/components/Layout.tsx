@@ -1,3 +1,5 @@
+//Este archivo define el layaout principal de la aplicacion
+//contiene el menu, los mensajes y el contenedor
 import { useEffect, useState } from "react";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -22,13 +24,12 @@ const pages = [
   { name: "Autores", link: "authors" },
   { name: "Clientes", link: "clients" },
   { name: "Prestamos", link: "prestamo" },
-
-
 ];
 
 export const Layout = () => {
     //hook de redux dispara acciones
 const dispatch = useAppDispatch();
+
   const { text, type } = useAppSelector((state) => state.messageReducer);
 
   //efecto que borra el mensaje a los 3s
@@ -40,7 +41,7 @@ const dispatch = useAppDispatch();
 
       
   const navigate = useNavigate();
-
+  //mednu responsive
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(
     null
   );

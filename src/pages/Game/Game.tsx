@@ -1,3 +1,4 @@
+//este archivo gestiona la vista principal del catálogo de juegos
 import { useState, useContext, useEffect } from "react";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";

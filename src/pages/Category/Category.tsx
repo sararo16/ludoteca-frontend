@@ -1,3 +1,5 @@
+//Este archivo gestiona completamente la pagina de categorias
+
 import { useEffect, useState, useContext } from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";

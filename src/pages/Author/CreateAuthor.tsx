@@ -1,3 +1,6 @@
+
+//Este archivo es un formulario modal reutilizable para crear y editar autores
+
 import { type ChangeEvent, useEffect, useState } from "react";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -7,6 +10,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import type { Author } from "../../types/Author";
 
+//recoge datos y los pasa a author.tsx 
 interface Props {
   author: Author | null; //edicion / creacion
   closeModal: () => void;
@@ -28,7 +32,7 @@ export default function CreateAuthor(props: Props) {
     setForm(props?.author || initialState);
   }, [props?.author]);
 
-  //handle generico, usa id del TextField como clave del estado
+  //handle generico, actualiza el estado segun el campo que se este escribiendo
   const handleChangeForm = (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {

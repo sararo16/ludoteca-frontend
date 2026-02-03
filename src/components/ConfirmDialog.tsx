@@ -1,4 +1,5 @@
-//dialogo de confirmacion 
+//dialogo de confirmacion  reutilizable  para confirmar o cancelar acciones
+
 import Button from "@mui/material/Button";
 import DialogContentText from "@mui/material/DialogContentText";
 import Dialog from "@mui/material/Dialog";
@@ -6,6 +7,7 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 
+//definicion de las props que recibe el componente
 interface Props {
   open:boolean; //dialogo visible
   onClose: () => void; //cerrar
@@ -13,6 +15,7 @@ interface Props {
   title: string;
   content: string;
 }
+
 
 export const ConfirmDialog = (props: Props) => {
   return (

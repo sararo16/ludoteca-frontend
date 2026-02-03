@@ -1,3 +1,4 @@
+//Este archivo define el API slice para la ludoteca
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { Game } from "../../types/Game";
 import type { Category } from "../../types/Category";
@@ -224,7 +225,7 @@ export const ludotecaAPI = createApi({
   }),
 });
 
-//Hooks para usar en componentes
+//Exportar Hooks para usar en componentes
 export const {
   useGetCategoriesQuery,
   useCreateCategoryMutation,

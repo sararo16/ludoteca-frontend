@@ -1,17 +1,24 @@
+
+//Provider global de loader
+//expone un contexto para mostrar / ocultar
+//spinner de pantalla completa
+//envolver la app
 import { createContext, useState, type ReactNode } from "react";
 import Backdrop from "@mui/material/Backdrop";
 import CircularProgress from "@mui/material/CircularProgress";
 
-
+//crear contexto con valores por defecto
 export const LoaderContext = createContext({
-  loading: false,
-  showLoading: (_show: boolean) => {},
+  loading: false, //si el loader esta activo
+  showLoading: (_show: boolean) => {}, //activar/desactivar loader
 });
 
+//tipado de las props del provider, children para envolver app
 type Props = {
   children: ReactNode;
 };
 
+//funcion de control que actualiza el estado loading
 export const LoaderProvider = ({ children }: Props) => {
   const showLoading = (show: boolean) => {
     setState((prev) => ({
@@ -20,6 +27,7 @@ export const LoaderProvider = ({ children }: Props) => {
     }));
   };
 
+  //estado unico que guarda el flag y show loading
   const [state, setState] = useState({
     loading: false,
     showLoading,

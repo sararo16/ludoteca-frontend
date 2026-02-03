@@ -1,3 +1,5 @@
+
+//Este archivo contiene el componente para listar, filtrar, crear, editar y borrar préstamos de juegos
 import { useState } from 'react';
 import {
 Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,

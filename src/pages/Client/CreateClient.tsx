@@ -1,3 +1,5 @@
+
+//este archivo contiene el modal para crear o editar un cliente
 import  { useEffect, useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button } from "@mui/material";
 import { useCreateClientMutation, useUpdateClientMutation } from "../../redux/services/ludotecaApi";
@@ -5,6 +7,7 @@ import type { Client } from "../../types/Client";
 import { useAppDispatch } from "../../redux/hooks";
 import { setMessage } from "../../redux/features/messageSlice";
 
+//definicion de las props que recibe el componente
 interface Props {
 open: boolean; //controla visibilidad del dialogo
 onClose: () => void;
